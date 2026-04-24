@@ -1,0 +1,325 @@
+﻿
+.toCenter
+{
+    text-align: center;
+}
+
+.toLeft {
+    text-align: left;
+}
+
+.toRight {
+    text-align: right;
+}
+
+.toJustify {
+    text-align: justify;
+}
+
+.al10 {
+    width: 10%;
+}
+
+.al16 {
+    width: 16.5%;
+}
+
+.al20 {
+    width: 20%;
+}
+
+.al25 {
+    width: 25%;
+}
+
+.al30 {
+    width: 30%;
+}
+
+.al33 {
+    width: 33%;
+}
+
+.al50 {
+    width: 50%;
+}
+
+.al60 {
+    width: 60%;
+}
+
+.al66 {
+    width: 66%;
+}
+
+.al70 {
+    width: 70%;
+}
+
+.al80 {
+    width: 80%;
+}
+
+.al90{
+    width: 90%;
+}
+
+.al100 {
+    width: 100%;
+}
+
+.heal50 {
+    height: 50%;
+}
+
+.divTable{
+    display: table;
+}
+
+.divRow{
+    display: table-row;
+}
+
+.divCell {
+    display: table-cell;
+}
+
+.pad5{
+    padding: 5px 5px 5px 5px;
+}
+
+.padLeft5 {
+    padding-left: 5px;
+}
+
+.padLeft10 {
+    padding-left: 10px;
+}
+
+.padLeft15 {
+    padding-left: 15px;
+}
+
+.padRight5 {
+    padding-right: 5px;
+}
+
+.padTop5 {
+    padding-top: 5px;
+}
+
+.padTop15{
+    padding-top:15px;
+}
+
+.imgPet{
+    width: 100%;
+    max-width: 32px;
+}
+select,
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"] {
+    border: 1px solid #c5c5c5;
+    padding: 4px 6px;
+    color: #323232;
+    margin: 0;
+    min-height: 30px;
+    line-height: 20px;
+    background-color: #ffffff;
+    outline: none;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -webkit-box-shadow: inset 0px 1px 3px rgba(128, 128, 128, 0.1);
+    -moz-box-shadow: inset 0px 1px 3px rgba(128, 128, 128, 0.1);
+    box-shadow: inset 0px 1px 3px rgba(128, 128, 128, 0.1);
+}
+
+.borderGlowBlue {
+    border: 2px solid #dadada;
+    border-radius: 7px;
+}
+
+    .borderGlowBlue:focus {
+        outline: none;
+        border-color: #9ecaed;
+        box-shadow: 0 0 10px #9ecaed;
+    }
+
+.GlowError {
+    outline: none;
+    border-color: #F92C2C;
+    box-shadow: 0 0 10px red;
+}
+
+    .GlowError: focusout {
+        outline: none;
+        border-color: #F92C2C;
+        box-shadow: 0 0 10px red;
+        background-color: #FDFFE4;
+    }
+
+.btnEnviar {
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 24px;
+    border: 1px solid #275e98;
+    border-radius: 8px;
+    background: #4ab0ff;
+    background: -webkit-gradient(linear, left top, left bottom, from(#4ab0ff), to(#275e98));
+    background: -moz-linear-gradient(top, #4ab0ff, #275e98);
+    background: linear-gradient(to bottom, #4ab0ff, #275e98);
+    -webkit-box-shadow: #59d3ff 0px 0px 40px 0px;
+    -moz-box-shadow: #59d3ff 0px 0px 40px 0px;
+    box-shadow: #59d3ff 0px 0px 40px 0px;
+    text-shadow: #17375a 1px 1px 1px;
+    font: normal normal bold 20px arial;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+    .btnEnviar:hover,
+    .btnEnviar:focus {
+        border: 1px solid #2e6eb3;
+        background: #59d3ff;
+        background: -webkit-gradient(linear, left top, left bottom, from(#59d3ff), to(#2f71b6));
+        background: -moz-linear-gradient(top, #59d3ff, #2f71b6);
+        background: linear-gradient(to bottom, #59d3ff, #2f71b6);
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .btnEnviar:active {
+        background: #275e98;
+        background: -webkit-gradient(linear, left top, left bottom, from(#275e98), to(#275e98));
+        background: -moz-linear-gradient(top, #275e98, #275e98);
+        background: linear-gradient(to bottom, #275e98, #275e98);
+    }
+
+.divPlecaTit{
+    color: white;
+    background-color:forestgreen;
+    border-radius: 5px 5px 0px 0px;
+    height: 32px;
+    vertical-align:middle;
+}
+
+.hal20 {
+    height: 20%;
+}
+
+.listBene {
+    list-style-image: url("../images/perrito16.png");
+    width: 100%;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.vAlignTop{
+    vertical-align:top;
+}
+
+
+.tBlue {
+    color: #0058a2;
+}
+
+.logoHeader{
+    width: 100%;
+    max-width:200px;
+}
+
+.fForm{
+    font-size: 26px;
+}
+
+.negrita{
+    font-weight:bold;
+}
+
+.logoContacto{
+    width: 100%;
+    max-width: 24px;
+}
+
+.btnLimpiar {
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 24px;
+    border: 1px solid #1e7e34; /* Borde verde oscuro (reemplazo del borde azul) */
+    border-radius: 8px;
+    background: #28a745; /* Fondo verde (reemplazo del fondo azul) */
+    background: -webkit-gradient(linear, left top, left bottom, from(#28a745), to(#1e7e34)); /* Degradado verde */
+    background: -moz-linear-gradient(top, #28a745, #1e7e34); /* Degradado verde */
+    background: linear-gradient(to bottom, #28a745, #1e7e34); /* Degradado verde */
+    -webkit-box-shadow: #5cb85c 0px 0px 40px 0px; /* Sombra verde claro (reemplazo de la sombra azul) */
+    -moz-box-shadow: #5cb85c 0px 0px 40px 0px;
+    box-shadow: #5cb85c 0px 0px 40px 0px;
+    text-shadow: #17375a 1px 1px 1px; /* Sombra de texto azul (se mantiene) */
+    font: normal normal bold 20px arial;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+    .btnLimpiar:hover,
+    .btnLimpiar:focus {
+        border: 1px solid #218838; /* Borde verde más claro al pasar el ratón */
+        background: #5cb85c; /* Fondo verde más claro al pasar el ratón */
+        background: -webkit-gradient(linear, left top, left bottom, from(#5cb85c), to(#248f3f)); /* Degradado verde claro */
+        background: -moz-linear-gradient(top, #5cb85c, #248f3f); /* Degradado verde claro */
+        background: linear-gradient(to bottom, #5cb85c, #248f3f); /* Degradado verde claro */
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .btnLimpiar:active {
+        background: #1e7e34; /* Fondo verde oscuro al hacer clic */
+        background: -webkit-gradient(linear, left top, left bottom, from(#1e7e34), to(#1e7e34));
+        background: -moz-linear-gradient(top, #1e7e34, #1e7e34);
+        background: linear-gradient(to bottom, #1e7e34, #1e7e34);
+    }
+.centered-image {
+    display: block; /* Convierte la imagen en un elemento de bloque para poder aplicar márgenes automáticos */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container-inferior {
+    margin-top: -7%; /* Ajusta este valor según la altura del "overflow" deseado */
+    position: relative; /* Necesario para el z-index si fuera necesario */
+}
+
+.row-inferior {
+    display: flex; /* Usamos flexbox para controlar la disposición horizontal de las celdas */
+    justify-content: space-around; /* Distribuye las celdas con espacio entre ellas */
+    align-items: flex-start; /* Alinea las celdas en la parte superior */
+}
+
+.divCell {
+    /* Mantén tus estilos existentes para el ancho y centrado */
+}
+
+.imagen-circular {
+    /* Mantén tus estilos existentes para el ancho y el border-radius */
+    display: block; /* Asegura que la imagen ocupe todo el ancho de su contenedor para el centrado */
+    margin: 0 auto; /* Centra la imagen dentro de su divCell */
+}

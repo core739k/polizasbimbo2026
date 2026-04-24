@@ -1,0 +1,18 @@
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+appsettings.Development.local.json
+appsettings.Production.json
+*.env
+*.pfx
+*.pem
+TestResults/
+coverage.*
+.idea/
+
+# Legado — archivos heredados del proyecto anterior que no deben viajar en Git
+src/PolizasBimbo.Web/wwwroot/resources/video_01.mp4
+src/PolizasBimbo.Web/wwwroot/resources/*.mp4

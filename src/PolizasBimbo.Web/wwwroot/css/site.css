@@ -1,0 +1,51 @@
+@import url("normalize.css");
+@import url("basic-style.css");
+@import url("form.css");
+
+/*
+  Fuente Gojal: coloca los archivos (gojal.woff2, gojal.woff, gojal.ttf) en
+  wwwroot/fonts/gojal/. Si los nombres difieren, ajusta las rutas aquí.
+*/
+@font-face {
+    font-family: 'Gojal';
+    src: url('../fonts/gojal/gojal.woff2') format('woff2'),
+         url('../fonts/gojal/gojal.woff') format('woff'),
+         url('../fonts/gojal/gojal.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+body {
+    font-family: 'Gojal', 'Ubuntu', Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Gojal', 'Droid Serif', Arial, Helvetica, sans-serif;
+}
+
+.download-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.download-list li {
+    margin: 10px 0;
+}
+
+.download-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border: 1px solid #275e98;
+    border-radius: 6px;
+    background: #4ab0ff;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.download-btn:hover {
+    background: #2f71b6;
+}

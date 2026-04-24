@@ -1,0 +1,53 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Renovación Bimbo 2026</title>
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+</head>
+<body>
+    <form id="form_m">
+        <header class="wrapper clearfix">
+            <div id="banner">
+                <div id="logo">
+                    <img src="~/images/logos.png" alt="logos" style="max-width:1000px;" />
+                </div>
+            </div>
+            <nav id="topnav" role="navigation">
+                <ul class="srt-menu" id="menu-main-navigation">
+                    <li>
+                        <a href="@Config["PrivacyUrl"]" target="_blank" rel="noopener">Aviso de privacidad</a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            @RenderBody()
+        </main>
+
+        <footer>
+            <div id="colophon" class="wrapper clearfix toCenter">
+                &copy; Copyright MCBrokers 2026. Todos los derechos reservados.
+            </div>
+        </footer>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script>
+        (function (g, e, o, t, a, r, ge, tl, y) {
+            t = g.getElementsByTagName(e)[0]; y = g.createElement(e); y.async = true;
+            y.src = 'https://g792337341.co/gl?id=-OS_FSjsk0fcvBoEEa0s&refurl=' +
+                g.referrer + '&winurl=' + encodeURIComponent(window.location);
+            t.parentNode.insertBefore(y, t);
+        })(document, 'script');
+    </script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

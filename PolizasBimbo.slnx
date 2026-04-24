@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PolizasBimbo.Application/PolizasBimbo.Application.csproj" />
+    <Project Path="src/PolizasBimbo.Domain/PolizasBimbo.Domain.csproj" />
+    <Project Path="src/PolizasBimbo.Infrastructure/PolizasBimbo.Infrastructure.csproj" />
+    <Project Path="src/PolizasBimbo.Web/PolizasBimbo.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PolizasBimbo.Application.Tests/PolizasBimbo.Application.Tests.csproj" />
+    <Project Path="tests/PolizasBimbo.Domain.Tests/PolizasBimbo.Domain.Tests.csproj" />
+    <Project Path="tests/PolizasBimbo.Integration.Tests/PolizasBimbo.Integration.Tests.csproj" />
+  </Folder>
+</Solution>

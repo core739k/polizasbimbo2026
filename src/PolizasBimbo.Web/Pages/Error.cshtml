@@ -1,0 +1,14 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="wrapper clearfix toCenter">
+    <h2 class="tBlue">Ocurrió un error al procesar tu solicitud.</h2>
+    <p>Intenta nuevamente en unos minutos. Si el problema persiste, comunícate con atención al cliente.</p>
+    @if (Model.ShowRequestId)
+    {
+        <p><strong>ID de solicitud:</strong> <code>@Model.RequestId</code></p>
+    }
+</div>

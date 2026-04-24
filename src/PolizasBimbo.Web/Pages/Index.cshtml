@@ -1,0 +1,126 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="wrapper clearfix toCenter">
+    <div class="divTable al100">
+        <div class="divRow al100">
+            <div class="divCol al100 toCenter">
+                <img src="~/images/portada01.png" alt="portada" class="al100" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wrapper clearfix">
+    <div class="divTable al100">
+        <div class="divRow al100">
+            <div class="divCell al50 toCenter">
+                <a href="~/resources/guia_usuario_caratula_poliza.pdf" target="_blank" rel="noopener">
+                    <img src="~/images/conoce_tu_poliza.png" alt="Conoce tu póliza" style="border-radius:8px;" class="al90" />
+                </a>
+            </div>
+            <div class="divCell al50 toCenter">
+                <a href="~/resources/glosario_conceptos_seguro.pdf" target="_blank" rel="noopener">
+                    <img src="~/images/glosario.png" alt="Glosario" style="border-radius:8px;" class="al90" />
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="parallax1"></div>
+
+<div class="wrapper clearfix" id="datos-consulta">
+    <h2 class="toCenter tBlue negrita">Ingresa los datos indicados para consultar tus pólizas</h2>
+    <div class="divTable al100 tBlue fForm">
+        <div class="divRow al100">
+            <div class="divCell al20"></div>
+            <div class="divCell al60">
+                <table class="al100">
+                    <tr class="al100">
+                        <td class="al20 toRight">Nombre o apellido:</td>
+                        <td class="al80 pad5">
+                            <input type="text" class="al100 borderGlowBlue padLeft5 padRight5 ucase" id="fNombre" name="fNombre"
+                                   placeholder="Nombre o apellido (mínimo 5 letras)" maxlength="200" />
+                        </td>
+                    </tr>
+                    <tr class="al100">
+                        <td class="al20 toRight"><img src="~/images/email.png" alt="email" /></td>
+                        <td class="al80 pad5">
+                            <input type="email" class="al100 borderGlowBlue padLeft5 padRight5 lcase" id="fEmail" name="fEmail"
+                                   placeholder="Correo electrónico" maxlength="100" />
+                        </td>
+                    </tr>
+                    <tr class="al100">
+                        <td class="al20 toRight"><img src="~/images/phone.png" alt="teléfono" /></td>
+                        <td class="al80 pad5">
+                            <input type="tel" class="al100 borderGlowBlue padLeft5 padRight5" id="fTel" name="fTel"
+                                   placeholder="Teléfono de contacto (10 dígitos)" maxlength="10" inputmode="numeric" />
+                        </td>
+                    </tr>
+                </table>
+                <table class="al100">
+                    <tr class="al100 toCenter">
+                        <td class="padTop15">
+                            <input type="button" id="btnBuscar" class="btnEnviar" value="Consultar Pólizas" />
+                        </td>
+                        <td class="padTop15">
+                            <input type="button" id="btnLimpiar" class="btnLimpiar" value="Nueva consulta" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="divCell al20"></div>
+        </div>
+    </div>
+</div>
+
+<div class="parallax2"></div>
+<div class="wrapper clearfix toCenter">
+    <h2 class="tBlue"><b>Resultado de la búsqueda</b></h2>
+    <div class="divTable al100 fForm">
+        <div class="divRow al100">
+            <div class="divCell al20 toCenter padLeft5 padRight5 padTop5 hal20"></div>
+            <div class="divCell al80 toCenter" id="divForPol"></div>
+            <div class="divCell al10 toCenter padLeft5 padRight5 padTop5 hal20"></div>
+        </div>
+    </div>
+
+    <div class="divTable al100">
+        <div class="divRow al100">
+            <div class="divCol al100 toCenter">
+                <a href="~/resources/preguntas_frecuentes.pdf" target="_blank" rel="noopener">
+                    <img src="~/images/preguntas_frecuentes.png" alt="Preguntas frecuentes" style="border-radius:8px;" class="al100" />
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="divTable al100">
+        <div class="divRow al100">
+            <div class="divCol al100 toCenter">
+                <img src="~/images/descargarapp.png" alt="Descarga la app" style="border-radius:8px;" class="al66" />
+            </div>
+        </div>
+        <div class="divRow al100">
+            <div class="divCol al100 toCenter">
+                <a href="https://api.whatsapp.com/send?phone=5215552030377&text=Estimados%2C%20soy%20colaborador%20de%20Bimbo%20y%20requiero%20asistencia%20para%20descargar%20mi%20p%C3%B3liza." rel="noopener">
+                    <img src="~/images/atención-al-cliente.png" alt="Atención al cliente" style="border-radius:8px;" class="al80" />
+                </a>
+            </div>
+        </div>
+        <div class="divRow al100">
+            <div class="divCol al100 toCenter">
+                <img src="~/images/atención-al-clienteUrgencias-png.png" alt="Urgencias" style="border-radius:8px;" class="al80" />
+            </div>
+        </div>
+        <div class="divRow al100">
+            <div class="divCol al100 toCenter">
+                <img src="~/images/tranquilidad.png" alt="Tranquilidad" style="border-radius:8px;" class="al100" />
+            </div>
+        </div>
+    </div>
+</div>
