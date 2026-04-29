@@ -18,14 +18,14 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(opt =>
             opt.UseSqlServer(config.GetConnectionString("Default")));
 
-        services.Configure<BlobStorageOptions>(config.GetSection("BlobStorage"));
+        services.Configure<PolicyProxyOptions>(config.GetSection("PolicyProxy"));
         services.Configure<TokenSignerOptions>(config.GetSection("TokenSigner"));
 
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<IPolicyRepository, SqlPolicyRepository>();
         services.AddScoped<IDownloadAuditRepository, SqlDownloadAuditRepository>();
         services.AddScoped<IDownloadTokenRepository, SqlDownloadTokenRepository>();
-        services.AddSingleton<IPolicyBlobStorage, AzureBlobPolicyStorage>();
+        services.AddSingleton<IPolicyDownloadUrlBuilder, PolicyProxyUrlBuilder>();
         services.AddSingleton<ITokenSigner, JwtTokenSigner>();
         services.AddSingleton<IPadronLoader, CsvPadronLoader>();
 

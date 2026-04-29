@@ -31,10 +31,7 @@ public class DownloadModel : PageModel
 
         return result switch
         {
-            DownloadPolicyResponse.Ok ok => File(
-                ok.Blob.Content,
-                ok.Blob.ContentType,
-                fileDownloadName: ok.FileName),
+            DownloadPolicyResponse.Ok ok => Redirect(ok.DownloadUrl),
             DownloadPolicyResponse.InvalidToken => StatusCode(StatusCodes.Status401Unauthorized, new { error = "Token inválido." }),
             DownloadPolicyResponse.Expired => StatusCode(StatusCodes.Status410Gone, new { error = "El enlace expiró. Realiza una nueva búsqueda." }),
             DownloadPolicyResponse.AlreadyUsed => StatusCode(StatusCodes.Status410Gone, new { error = "Este enlace ya fue utilizado." }),

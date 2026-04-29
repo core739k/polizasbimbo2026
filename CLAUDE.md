@@ -1,7 +1,7 @@
 # PolizasBimbo2026 — CLAUDE.md
 
 Proyecto: Renovación del portal de descarga de pólizas Bimbo para vigencia 2026.
-Stack: **ASP.NET Core (.NET 10) + Razor Pages + SQL Server + Azure Blob + Docker**.
+Stack: **ASP.NET Core (.NET 10) + Razor Pages + SQL Server + Docker**. Los archivos PDF de pólizas se sirven vía proxy externo (`api.mcb.uno`); el portal no se conecta a Azure Blob directamente.
 
 > El proyecto legado está en `../PolizasBimbo2025` (ASP.NET Web Forms 4.7.2). No se modifica.
 
@@ -15,7 +15,7 @@ PolizasBimbo2026/
 ├── src/
 │   ├── PolizasBimbo.Domain/          # Entidades, Value Objects. Sin dependencias externas.
 │   ├── PolizasBimbo.Application/     # Use cases y abstracciones (interfaces).
-│   ├── PolizasBimbo.Infrastructure/  # EF Core, Azure Blob, JWT, CsvHelper.
+│   ├── PolizasBimbo.Infrastructure/  # EF Core, JWT, CsvHelper.
 │   └── PolizasBimbo.Web/             # Razor Pages + endpoints + DI.
 ├── tests/
 │   ├── PolizasBimbo.Domain.Tests/
@@ -50,7 +50,6 @@ Escucha en `https://localhost:5001` (puerto por defecto de .NET 10 minimal webap
 docker build -t polizasbimbo2026 .
 docker run -p 8080:8080 \
   -e ConnectionStrings__Default="..." \
-  -e BlobStorage__ConnectionString="..." \
   -e TokenSigner__SigningKey="..." \
   -e Admin__ApiKey="..." \
   polizasbimbo2026
@@ -83,18 +82,16 @@ Las siguientes claves deben venir por variables de entorno o Azure Key Vault —
 | Clave | Ejemplo |
 |---|---|
 | `ConnectionStrings__Default` | `Server=...;Database=...;Authentication=Active Directory Default` |
-| `BlobStorage__ConnectionString` | `DefaultEndpointsProtocol=https;AccountName=mcbwebstorage;...` |
-| `BlobStorage__Container` | `polizas-bimbo-2026` |
-| `BlobStorage__Prefix` | `` (vacío o ruta dentro del contenedor) |
 | `TokenSigner__SigningKey` | string ≥ 32 caracteres aleatorios |
 | `Admin__ApiKey` | string aleatorio largo |
+
+`PolicyProxy:BaseUrl` (URL del proxy de blobs, no es secreto) vive en `appsettings.json` con default `https://api.mcb.uno:8099/api/v1/blobs/`. Sobrescribir solo si cambia el endpoint.
 
 ---
 
 ## Recursos pendientes
 
 - **Fuente Gojal**: colocar `gojal.woff2` / `gojal.woff` / `gojal.ttf` en `src/PolizasBimbo.Web/wwwroot/fonts/gojal/`. El CSS ya hace referencia vía `@font-face`.
-- **Contenedor Azure Blob**: crear manualmente `polizas-bimbo-2026` (privado) antes del primer deploy.
 - **App Service Azure**: `renovacionbimbo2026` en Linux + custom domain `renovacionbimbo.mcbrokers.com.mx`.
 
 ---
@@ -107,7 +104,7 @@ Las siguientes claves deben venir por variables de entorno o Azure Key Vault —
             ← [{ policyId, fileName, downloadToken }]
 3. Usuario → POST /d/{token}                  (Body: email, telefono, pais, ciudad)
             Backend: valida JWT + jti no consumido, UPDATE email/tel en padrón,
-                     INSERT auditoría con geo, stream del blob privado.
+                     INSERT auditoría con geo, redirige (302) al proxy de blobs.
 ```
 
 `token` es un JWT HMAC-SHA256 con `{ jti, polId, exp }` y TTL 10 min. Ver ADR-001.

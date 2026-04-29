@@ -13,7 +13,7 @@ public sealed record DownloadPolicyRequest(
 
 public abstract record DownloadPolicyResponse
 {
-    public sealed record Ok(BlobDownload Blob, string FileName) : DownloadPolicyResponse;
+    public sealed record Ok(string DownloadUrl, string FileName) : DownloadPolicyResponse;
     public sealed record InvalidToken : DownloadPolicyResponse;
     public sealed record Expired : DownloadPolicyResponse;
     public sealed record AlreadyUsed : DownloadPolicyResponse;
@@ -25,7 +25,7 @@ public sealed class DownloadPolicyHandler
     private readonly ITokenSigner _signer;
     private readonly IDownloadTokenRepository _tokens;
     private readonly IPolicyRepository _policies;
-    private readonly IPolicyBlobStorage _blob;
+    private readonly IPolicyDownloadUrlBuilder _urls;
     private readonly IDownloadAuditRepository _audit;
     private readonly IClock _clock;
 
@@ -33,14 +33,14 @@ public sealed class DownloadPolicyHandler
         ITokenSigner signer,
         IDownloadTokenRepository tokens,
         IPolicyRepository policies,
-        IPolicyBlobStorage blob,
+        IPolicyDownloadUrlBuilder urls,
         IDownloadAuditRepository audit,
         IClock clock)
     {
         _signer = signer;
         _tokens = tokens;
         _policies = policies;
-        _blob = blob;
+        _urls = urls;
         _audit = audit;
         _clock = clock;
     }
@@ -62,9 +62,6 @@ public sealed class DownloadPolicyHandler
         var policy = await _policies.GetByIdAsync(payload.PolicyId, ct);
         if (policy is null) return new DownloadPolicyResponse.NotFound();
 
-        var blob = await _blob.OpenReadAsync(policy.FileName, ct);
-        if (blob is null) return new DownloadPolicyResponse.NotFound();
-
         var email = Email.Create(request.Email);
         var phone = Phone.Create(request.Phone);
         var geo = GeoOrigin.Create(request.Country, request.City);
@@ -73,6 +70,7 @@ public sealed class DownloadPolicyHandler
         await _policies.UpdateContactAsync(policy.NumColaborador, email.Value, phone.Value, now, ct);
         await _audit.AddAsync(DownloadAudit.Record(policy, email, phone, geo, now), ct);
 
-        return new DownloadPolicyResponse.Ok(blob, policy.FileName);
+        var downloadUrl = _urls.Build(policy.FileName);
+        return new DownloadPolicyResponse.Ok(downloadUrl, policy.FileName);
     }
 }
