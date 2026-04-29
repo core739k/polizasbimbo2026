@@ -1,7 +1,6 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using PolizasBimbo.Application.UseCases.DownloadPolicy;
-using PolizasBimbo.Application.UseCases.LoadPadron;
 using PolizasBimbo.Application.UseCases.SearchPolicies;
 using PolizasBimbo.Infrastructure;
 
@@ -11,7 +10,6 @@ builder.Services.AddRazorPages();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<SearchPoliciesHandler>();
 builder.Services.AddScoped<DownloadPolicyHandler>();
-builder.Services.AddScoped<LoadPadronHandler>();
 builder.Services.AddAntiforgery();
 
 builder.Services.AddRateLimiter(options =>

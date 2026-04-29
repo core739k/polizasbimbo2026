@@ -15,12 +15,11 @@ public class JwtTokenSignerTests
         var sut = CreateSut();
         var jti = Guid.NewGuid();
         var issuedAt = new DateTime(2026, 4, 24, 12, 0, 0, DateTimeKind.Utc);
-        var token = sut.Issue(jti, 42, issuedAt, TimeSpan.FromMinutes(10));
+        var token = sut.Issue(jti, issuedAt, TimeSpan.FromMinutes(10));
 
         var payload = sut.Validate(token, issuedAt.AddMinutes(5));
         payload.Should().NotBeNull();
         payload!.Jti.Should().Be(jti);
-        payload.PolicyId.Should().Be(42);
         payload.ExpiresAt.Should().BeCloseTo(issuedAt.AddMinutes(10), TimeSpan.FromSeconds(1));
     }
 
@@ -28,7 +27,7 @@ public class JwtTokenSignerTests
     public void Validate_WithTamperedSignature_ReturnsNull()
     {
         var sut = CreateSut();
-        var token = sut.Issue(Guid.NewGuid(), 1, DateTime.UtcNow, TimeSpan.FromMinutes(10));
+        var token = sut.Issue(Guid.NewGuid(), DateTime.UtcNow, TimeSpan.FromMinutes(10));
         var tampered = token[..^2] + "xx";
         sut.Validate(tampered, DateTime.UtcNow).Should().BeNull();
     }

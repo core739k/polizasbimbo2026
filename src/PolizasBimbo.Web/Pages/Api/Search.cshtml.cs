@@ -14,17 +14,20 @@ public class SearchModel : PageModel
 
     public class SearchInput
     {
-        public string Nombre { get; set; } = string.Empty;
+        public int IdColaborador { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Telefono { get; set; } = string.Empty;
     }
 
     public async Task<IActionResult> OnPostAsync([FromBody] SearchInput input, CancellationToken ct)
     {
         try
         {
-            var response = await _handler.HandleAsync(new SearchPoliciesRequest(input.Nombre), ct);
+            var response = await _handler.HandleAsync(
+                new SearchPoliciesRequest(input.IdColaborador, input.Email, input.Telefono), ct);
             return new JsonResult(new
             {
-                results = response.Results.Select(r => new { r.PolicyId, r.FileName, r.DownloadToken })
+                results = response.Results.Select(r => new { r.FileName, r.DisplayName, r.DownloadToken })
             });
         }
         catch (ArgumentException ex)

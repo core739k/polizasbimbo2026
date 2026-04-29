@@ -1,19 +1,15 @@
 using PolizasBimbo.Application.Abstractions;
+using PolizasBimbo.Application.UseCases.SearchPolicies;
 using PolizasBimbo.Domain.Entities;
 using PolizasBimbo.Domain.ValueObjects;
 
 namespace PolizasBimbo.Application.UseCases.DownloadPolicy;
 
-public sealed record DownloadPolicyRequest(
-    string Token,
-    string Email,
-    string Phone,
-    string? Country,
-    string? City);
+public sealed record DownloadPolicyRequest(string Token);
 
 public abstract record DownloadPolicyResponse
 {
-    public sealed record Ok(string DownloadUrl, string FileName) : DownloadPolicyResponse;
+    public sealed record Ok(BlobDownload Blob, string DisplayFileName) : DownloadPolicyResponse;
     public sealed record InvalidToken : DownloadPolicyResponse;
     public sealed record Expired : DownloadPolicyResponse;
     public sealed record AlreadyUsed : DownloadPolicyResponse;
@@ -24,23 +20,20 @@ public sealed class DownloadPolicyHandler
 {
     private readonly ITokenSigner _signer;
     private readonly IDownloadTokenRepository _tokens;
-    private readonly IPolicyRepository _policies;
-    private readonly IPolicyDownloadUrlBuilder _urls;
+    private readonly IPolicyBlobStorage _blob;
     private readonly IDownloadAuditRepository _audit;
     private readonly IClock _clock;
 
     public DownloadPolicyHandler(
         ITokenSigner signer,
         IDownloadTokenRepository tokens,
-        IPolicyRepository policies,
-        IPolicyDownloadUrlBuilder urls,
+        IPolicyBlobStorage blob,
         IDownloadAuditRepository audit,
         IClock clock)
     {
         _signer = signer;
         _tokens = tokens;
-        _policies = policies;
-        _urls = urls;
+        _blob = blob;
         _audit = audit;
         _clock = clock;
     }
@@ -59,18 +52,20 @@ public sealed class DownloadPolicyHandler
         if (record is null) return new DownloadPolicyResponse.InvalidToken();
         if (record.IsConsumed) return new DownloadPolicyResponse.AlreadyUsed();
 
-        var policy = await _policies.GetByIdAsync(payload.PolicyId, ct);
-        if (policy is null) return new DownloadPolicyResponse.NotFound();
-
-        var email = Email.Create(request.Email);
-        var phone = Phone.Create(request.Phone);
-        var geo = GeoOrigin.Create(request.Country, request.City);
+        var blob = await _blob.OpenReadAsync(record.FileName, ct);
+        if (blob is null) return new DownloadPolicyResponse.NotFound();
 
         await _tokens.MarkConsumedAsync(record.Jti, now, ct);
-        await _policies.UpdateContactAsync(policy.NumColaborador, email.Value, phone.Value, now, ct);
-        await _audit.AddAsync(DownloadAudit.Record(policy, email, phone, geo, now), ct);
+        await _audit.AddAsync(
+            DownloadAudit.Record(
+                record.IdColaborador,
+                record.FileName,
+                Email.Create(record.Email),
+                Phone.Create(record.Phone),
+                now),
+            ct);
 
-        var downloadUrl = _urls.Build(policy.FileName);
-        return new DownloadPolicyResponse.Ok(downloadUrl, policy.FileName);
+        var display = SearchPoliciesHandler.DeriveDisplayName(record.FileName) + ".pdf";
+        return new DownloadPolicyResponse.Ok(blob, display);
     }
 }

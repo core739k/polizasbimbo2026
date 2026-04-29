@@ -13,13 +13,10 @@ public sealed class SqlDownloadAuditRepository : IDownloadAuditRepository
     {
         _db.Audits.Add(new DownloadAuditRecord
         {
-            PolicyId = audit.PolicyId,
             NumColaborador = audit.NumColaborador,
             Email = audit.Email,
             Phone = audit.Phone,
             FileName = audit.FileName,
-            Country = audit.Origin.Country,
-            City = audit.Origin.City,
             CreatedAt = audit.CreatedAt
         });
         await _db.SaveChangesAsync(ct);

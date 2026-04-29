@@ -24,13 +24,12 @@ public sealed class JwtTokenSigner : ITokenSigner
         _key = Encoding.UTF8.GetBytes(raw);
     }
 
-    public string Issue(Guid jti, int policyId, DateTime issuedAt, TimeSpan ttl)
+    public string Issue(Guid jti, DateTime issuedAt, TimeSpan ttl)
     {
         var header = new { alg = "HS256", typ = "JWT" };
         var payload = new
         {
             jti = jti.ToString("D"),
-            polId = policyId,
             iat = ToUnix(issuedAt),
             exp = ToUnix(issuedAt.Add(ttl))
         };
@@ -60,10 +59,9 @@ public sealed class JwtTokenSigner : ITokenSigner
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
             var jti = Guid.Parse(root.GetProperty("jti").GetString()!);
-            var polId = root.GetProperty("polId").GetInt32();
             var exp = root.GetProperty("exp").GetInt64();
             var expiresAt = DateTimeOffset.FromUnixTimeSeconds(exp).UtcDateTime;
-            return new TokenPayload(jti, polId, expiresAt);
+            return new TokenPayload(jti, expiresAt);
         }
         catch
         {

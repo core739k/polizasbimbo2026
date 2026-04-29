@@ -1,7 +1,8 @@
 # PolizasBimbo2026 — CLAUDE.md
 
 Proyecto: Renovación del portal de descarga de pólizas Bimbo para vigencia 2026.
-Stack: **ASP.NET Core (.NET 10) + Razor Pages + SQL Server + Docker**. Los archivos PDF de pólizas se sirven vía proxy externo (`api.mcb.uno`); el portal no se conecta a Azure Blob directamente.
+Stack: **ASP.NET Core (.NET 10) + Razor Pages + SQL Server + Azure Blob Storage + Docker**.
+Los archivos PDF de pólizas viven en un contenedor Azure Blob **privado** (`mcbwebstorage / archivos / bimbo/renovacion2026/`); el portal los enumera y stream-ea por nombre del colaborador, jamás expone URLs directas.
 
 > El proyecto legado está en `../PolizasBimbo2025` (ASP.NET Web Forms 4.7.2). No se modifica.
 
@@ -15,13 +16,13 @@ PolizasBimbo2026/
 ├── src/
 │   ├── PolizasBimbo.Domain/          # Entidades, Value Objects. Sin dependencias externas.
 │   ├── PolizasBimbo.Application/     # Use cases y abstracciones (interfaces).
-│   ├── PolizasBimbo.Infrastructure/  # EF Core, JWT, CsvHelper.
+│   ├── PolizasBimbo.Infrastructure/  # EF Core, Azure Blob, JWT.
 │   └── PolizasBimbo.Web/             # Razor Pages + endpoints + DI.
 ├── tests/
 │   ├── PolizasBimbo.Domain.Tests/
 │   ├── PolizasBimbo.Application.Tests/
 │   └── PolizasBimbo.Integration.Tests/
-├── db/migrations/                    # DDL idempotente (001..004)
+├── db/migrations/                    # DDL idempotente
 ├── docs/adr/                         # Decisiones arquitectónicas
 └── Dockerfile
 ```
@@ -43,49 +44,42 @@ dotnet test tests/PolizasBimbo.Domain.Tests/PolizasBimbo.Domain.Tests.csproj
 ```bash
 dotnet run --project src/PolizasBimbo.Web
 ```
-Escucha en `https://localhost:5001` (puerto por defecto de .NET 10 minimal webapp).
+Escucha en el puerto definido por `launchSettings.json` (Development: `http://localhost:5003`).
 
 ### Docker
 ```bash
 docker build -t polizasbimbo2026 .
 docker run -p 8080:8080 \
   -e ConnectionStrings__Default="..." \
+  -e BlobStorage__ConnectionString="..." \
   -e TokenSigner__SigningKey="..." \
-  -e Admin__ApiKey="..." \
   polizasbimbo2026
 ```
 
 ### Aplicar DDL
-Ejecutar en orden contra la base `prodmacooley_desarrollo`:
+Bases nuevas — ejecutar en orden contra la base `prodmacooley_desarrollo`:
 ```
-db/migrations/001_alter_polizas_bimbo_traspaso.sql
-db/migrations/002_alter_consulta_polizas_bimbo_traspaso.sql
 db/migrations/003_create_download_tokens.sql
-db/migrations/004_cleanup_job.sql   (opcional — job diario)
+db/migrations/004_cleanup_job.sql               (opcional — job diario)
+db/migrations/005_simplify_tokens_and_audit.sql
 ```
-Los tres primeros son idempotentes; se pueden re-ejecutar sin efecto.
+Bases que ya tenían 001/002 aplicadas: correr únicamente `005_simplify_tokens_and_audit.sql` — desacopla `DownloadTokens` y `ConsultaPolizasBimboTraspaso` de `PolizasBimboTraspaso` (esa tabla queda intacta como legado).
 
-### Cargar padrón (admin)
-```bash
-curl -X POST "https://renovacionbimbo.mcbrokers.com.mx/admin/load-padron" \
-  -H "X-Admin-Key: <clave>" \
-  -F "file=@padron_2026.csv"
-```
-El CSV debe ser UTF-8, separado por comas, **sin cabecera**, columnas: `NumColaborador,NombreCompleto,NomArchivo`.
+001 y 002 están obsoletos: alteraban `PolizasBimboTraspaso` y `ConsultaPolizasBimboTraspaso` para un flujo basado en padrón SQL que ya no aplica.
 
 ---
 
 ## Configuración (nunca en Git)
 
-Las siguientes claves deben venir por variables de entorno o Azure Key Vault — no van en `appsettings.json`:
+Las siguientes claves deben venir por User Secrets (Development), variables de entorno o Azure Key Vault — no van en `appsettings.json`:
 
-| Clave | Ejemplo |
-|---|---|
-| `ConnectionStrings__Default` | `Server=...;Database=...;Authentication=Active Directory Default` |
-| `TokenSigner__SigningKey` | string ≥ 32 caracteres aleatorios |
-| `Admin__ApiKey` | string aleatorio largo |
+| Clave (User Secrets / `:`) | Variable de entorno (`__`) | Ejemplo |
+|---|---|---|
+| `ConnectionStrings:Default` | `ConnectionStrings__Default` | `Server=...;Database=prodmacooley_desarrollo;Authentication=Active Directory Default` |
+| `BlobStorage:ConnectionString` | `BlobStorage__ConnectionString` | `DefaultEndpointsProtocol=https;AccountName=mcbwebstorage;AccountKey=...;EndpointSuffix=core.windows.net` |
+| `TokenSigner:SigningKey` | `TokenSigner__SigningKey` | string ≥ 32 caracteres aleatorios |
 
-`PolicyProxy:BaseUrl` (URL del proxy de blobs, no es secreto) vive en `appsettings.json` con default `https://api.mcb.uno:8099/api/v1/blobs/`. Sobrescribir solo si cambia el endpoint.
+`BlobStorage:Container` (`archivos`) y `BlobStorage:Prefix` (`bimbo/renovacion2026/`) viven en `appsettings.json` con default; sobrescribirlos solo si cambia la nomenclatura.
 
 ---
 
@@ -99,20 +93,26 @@ Las siguientes claves deben venir por variables de entorno o Azure Key Vault —
 ## Flujo funcional
 
 ```
-1. Usuario → GET /                           (form con nombre/email/teléfono)
-2. Usuario → POST /api/search { nombre }     (FULLTEXT, TOP 5, rate-limit 10/min/IP)
-            ← [{ policyId, fileName, downloadToken }]
-3. Usuario → POST /d/{token}                  (Body: email, telefono, pais, ciudad)
-            Backend: valida JWT + jti no consumido, UPDATE email/tel en padrón,
-                     INSERT auditoría con geo, redirige (302) al proxy de blobs.
+1. Usuario → GET /                                                (form con ID colaborador / email / teléfono)
+2. Usuario → POST /api/search { idColaborador, email, telefono }  (rate-limit 10/min/IP)
+            Backend: valida campos, lista blobs con prefijo
+                     "{Prefix}{idColaborador}_", emite un JWT por
+                     archivo y persiste fila en DownloadTokens.
+            ← [{ fileName, displayName, downloadToken }]
+3. Usuario → GET  /d/{token}
+            Backend: valida JWT + jti no consumido, abre blob
+                     privado, marca consumido, registra auditoría
+                     en ConsultaPolizasBimboTraspaso (NumColaborador,
+                     Email, Telefono, NomArchivo, FechaCreacion),
+                     stream del archivo como FileStreamResult.
 ```
 
-`token` es un JWT HMAC-SHA256 con `{ jti, polId, exp }` y TTL 10 min. Ver ADR-001.
+`token` es un JWT HMAC-SHA256 con `{ jti, exp }` (TTL 10 min). El contexto del download (archivo, idColaborador, email, teléfono) vive en la fila `DownloadTokens` referenciada por `jti`. Ver ADR-001.
 
 ---
 
 ## Decisiones arquitectónicas
 Ver `/docs/adr/`:
 - ADR-001: Proxy de descarga con JWT opaco de un solo uso.
-- ADR-002: Full-Text Index sobre NombreCompleto.
-- ADR-003: Recarga del padrón con DELETE + INSERT transaccional.
+- ADR-002: Full-Text Index sobre NombreCompleto. *(obsoleto — la búsqueda se hace por listado en Blob Storage; ya no se consulta `PolizasBimboTraspaso`.)*
+- ADR-003: Recarga del padrón con DELETE + INSERT transaccional. *(obsoleto — sin padrón SQL.)*

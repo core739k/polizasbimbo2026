@@ -15,7 +15,10 @@ public sealed class SqlDownloadTokenRepository : IDownloadTokenRepository
         _db.DownloadTokens.Add(new DownloadTokenRecord
         {
             Jti = token.Jti,
-            PolicyId = token.PolicyId,
+            FileName = token.FileName,
+            IdColaborador = token.IdColaborador,
+            Email = token.Email,
+            Phone = token.Phone,
             IssuedAt = token.IssuedAt,
             ConsumedAt = token.ConsumedAt
         });
@@ -25,7 +28,9 @@ public sealed class SqlDownloadTokenRepository : IDownloadTokenRepository
     public async Task<DownloadToken?> GetAsync(Guid jti, CancellationToken ct)
     {
         var row = await _db.DownloadTokens.AsNoTracking().FirstOrDefaultAsync(t => t.Jti == jti, ct);
-        return row is null ? null : DownloadToken.Rehydrate(row.Jti, row.PolicyId, row.IssuedAt, row.ConsumedAt);
+        return row is null
+            ? null
+            : DownloadToken.Rehydrate(row.Jti, row.FileName, row.IdColaborador, row.Email, row.Phone, row.IssuedAt, row.ConsumedAt);
     }
 
     public async Task MarkConsumedAsync(Guid jti, DateTime utcNow, CancellationToken ct)

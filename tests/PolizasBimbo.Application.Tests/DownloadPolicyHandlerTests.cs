@@ -11,22 +11,28 @@ public class DownloadPolicyHandlerTests
 {
     private readonly Mock<ITokenSigner> _signer = new();
     private readonly Mock<IDownloadTokenRepository> _tokens = new();
-    private readonly Mock<IPolicyRepository> _policies = new();
-    private readonly Mock<IPolicyDownloadUrlBuilder> _urls = new();
+    private readonly Mock<IPolicyBlobStorage> _blob = new();
     private readonly Mock<IDownloadAuditRepository> _audit = new();
     private readonly FixedClock _clock = new(new DateTime(2026, 4, 24, 12, 0, 0, DateTimeKind.Utc));
 
     private DownloadPolicyHandler CreateSut() =>
-        new(_signer.Object, _tokens.Object, _policies.Object, _urls.Object, _audit.Object, _clock);
+        new(_signer.Object, _tokens.Object, _blob.Object, _audit.Object, _clock);
 
-    private static DownloadPolicyRequest ValidRequest(string token = "jwt") =>
-        new(token, "user@example.com", "5551234567", "Mexico", "Ciudad de Mexico");
+    private static DownloadToken FreshToken(Guid jti, DateTime issuedAt) =>
+        DownloadToken.Rehydrate(
+            jti,
+            "bimbo/renovacion2026/10010081_MARIA GUADALUPE.pdf",
+            10010081,
+            "user@example.com",
+            "5551234567",
+            issuedAt,
+            null);
 
     [Fact]
     public async Task Handle_InvalidToken_ReturnsInvalidToken()
     {
         _signer.Setup(s => s.Validate(It.IsAny<string>(), It.IsAny<DateTime>())).Returns((TokenPayload?)null);
-        var result = await CreateSut().HandleAsync(ValidRequest(), CancellationToken.None);
+        var result = await CreateSut().HandleAsync(new DownloadPolicyRequest("jwt"), CancellationToken.None);
         result.Should().BeOfType<DownloadPolicyResponse.InvalidToken>();
     }
 
@@ -35,8 +41,8 @@ public class DownloadPolicyHandlerTests
     {
         var jti = Guid.NewGuid();
         _signer.Setup(s => s.Validate(It.IsAny<string>(), It.IsAny<DateTime>()))
-               .Returns(new TokenPayload(jti, 1, _clock.UtcNow.AddMinutes(-1)));
-        var result = await CreateSut().HandleAsync(ValidRequest(), CancellationToken.None);
+               .Returns(new TokenPayload(jti, _clock.UtcNow.AddMinutes(-1)));
+        var result = await CreateSut().HandleAsync(new DownloadPolicyRequest("jwt"), CancellationToken.None);
         result.Should().BeOfType<DownloadPolicyResponse.Expired>();
     }
 
@@ -45,54 +51,56 @@ public class DownloadPolicyHandlerTests
     {
         var jti = Guid.NewGuid();
         _signer.Setup(s => s.Validate(It.IsAny<string>(), It.IsAny<DateTime>()))
-               .Returns(new TokenPayload(jti, 1, _clock.UtcNow.AddMinutes(5)));
+               .Returns(new TokenPayload(jti, _clock.UtcNow.AddMinutes(5)));
 
-        var consumed = DownloadToken.Rehydrate(jti, 1, _clock.UtcNow.AddMinutes(-1), _clock.UtcNow);
+        var consumed = DownloadToken.Rehydrate(jti, "f.pdf", 1, "a@b.co", "5550000000", _clock.UtcNow.AddMinutes(-1), _clock.UtcNow);
         _tokens.Setup(t => t.GetAsync(jti, It.IsAny<CancellationToken>())).ReturnsAsync(consumed);
 
-        var result = await CreateSut().HandleAsync(ValidRequest(), CancellationToken.None);
+        var result = await CreateSut().HandleAsync(new DownloadPolicyRequest("jwt"), CancellationToken.None);
         result.Should().BeOfType<DownloadPolicyResponse.AlreadyUsed>();
     }
 
     [Fact]
-    public async Task Handle_HappyPath_ReturnsOkWithProxyUrlAndConsumesToken()
+    public async Task Handle_HappyPath_StreamsBlobConsumesTokenAndAudits()
     {
         var jti = Guid.NewGuid();
         _signer.Setup(s => s.Validate(It.IsAny<string>(), It.IsAny<DateTime>()))
-               .Returns(new TokenPayload(jti, 1, _clock.UtcNow.AddMinutes(5)));
+               .Returns(new TokenPayload(jti, _clock.UtcNow.AddMinutes(5)));
 
-        var fresh = DownloadToken.Rehydrate(jti, 1, _clock.UtcNow.AddMinutes(-1), null);
+        var fresh = FreshToken(jti, _clock.UtcNow.AddMinutes(-1));
         _tokens.Setup(t => t.GetAsync(jti, It.IsAny<CancellationToken>())).ReturnsAsync(fresh);
 
-        var policy = Policy.Create(1, 10010067, "JUAN PEREZ", "10010067_0000001.pdf");
-        _policies.Setup(p => p.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(policy);
+        var stream = new MemoryStream(new byte[] { 1, 2, 3 });
+        _blob.Setup(b => b.OpenReadAsync(fresh.FileName, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(new BlobDownload(stream, "application/pdf", 3));
 
-        const string expectedUrl = "https://api.mcb.uno:8099/api/v1/blobs/10010067_0000001.pdf";
-        _urls.Setup(u => u.Build(policy.FileName)).Returns(expectedUrl);
-
-        var result = await CreateSut().HandleAsync(ValidRequest(), CancellationToken.None);
+        var result = await CreateSut().HandleAsync(new DownloadPolicyRequest("jwt"), CancellationToken.None);
 
         var ok = result.Should().BeOfType<DownloadPolicyResponse.Ok>().Subject;
-        ok.DownloadUrl.Should().Be(expectedUrl);
-        ok.FileName.Should().Be(policy.FileName);
+        ok.Blob.Content.Should().BeSameAs(stream);
+        ok.DisplayFileName.Should().Be("MARIA GUADALUPE.pdf");
 
         _tokens.Verify(t => t.MarkConsumedAsync(jti, _clock.UtcNow, It.IsAny<CancellationToken>()), Times.Once);
-        _policies.Verify(p => p.UpdateContactAsync(10010067, "user@example.com", "5551234567", _clock.UtcNow, It.IsAny<CancellationToken>()), Times.Once);
-        _audit.Verify(a => a.AddAsync(It.IsAny<DownloadAudit>(), It.IsAny<CancellationToken>()), Times.Once);
+        _audit.Verify(a => a.AddAsync(
+            It.Is<DownloadAudit>(da =>
+                da.NumColaborador == 10010081 &&
+                da.Email == "user@example.com" &&
+                da.Phone == "5551234567" &&
+                da.FileName == fresh.FileName),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_PolicyMissing_ReturnsNotFound()
+    public async Task Handle_BlobMissing_ReturnsNotFound()
     {
         var jti = Guid.NewGuid();
         _signer.Setup(s => s.Validate(It.IsAny<string>(), It.IsAny<DateTime>()))
-               .Returns(new TokenPayload(jti, 99, _clock.UtcNow.AddMinutes(5)));
-        _tokens.Setup(t => t.GetAsync(jti, It.IsAny<CancellationToken>()))
-               .ReturnsAsync(DownloadToken.Rehydrate(jti, 99, _clock.UtcNow, null));
-        _policies.Setup(p => p.GetByIdAsync(99, It.IsAny<CancellationToken>()))
-                 .ReturnsAsync((Policy?)null);
+               .Returns(new TokenPayload(jti, _clock.UtcNow.AddMinutes(5)));
+        _tokens.Setup(t => t.GetAsync(jti, It.IsAny<CancellationToken>())).ReturnsAsync(FreshToken(jti, _clock.UtcNow));
+        _blob.Setup(b => b.OpenReadAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync((BlobDownload?)null);
 
-        var result = await CreateSut().HandleAsync(ValidRequest(), CancellationToken.None);
+        var result = await CreateSut().HandleAsync(new DownloadPolicyRequest("jwt"), CancellationToken.None);
         result.Should().BeOfType<DownloadPolicyResponse.NotFound>();
     }
 }

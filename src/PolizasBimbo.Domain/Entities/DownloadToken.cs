@@ -3,23 +3,29 @@ namespace PolizasBimbo.Domain.Entities;
 public sealed class DownloadToken
 {
     public Guid Jti { get; }
-    public int PolicyId { get; }
+    public string FileName { get; }
+    public int IdColaborador { get; }
+    public string Email { get; }
+    public string Phone { get; }
     public DateTime IssuedAt { get; }
     public DateTime? ConsumedAt { get; private set; }
 
-    private DownloadToken(Guid jti, int policyId, DateTime issuedAt, DateTime? consumedAt)
+    private DownloadToken(Guid jti, string fileName, int idColaborador, string email, string phone, DateTime issuedAt, DateTime? consumedAt)
     {
         Jti = jti;
-        PolicyId = policyId;
+        FileName = fileName;
+        IdColaborador = idColaborador;
+        Email = email;
+        Phone = phone;
         IssuedAt = issuedAt;
         ConsumedAt = consumedAt;
     }
 
-    public static DownloadToken Issue(int policyId, DateTime utcNow)
-        => new(Guid.NewGuid(), policyId, utcNow, null);
+    public static DownloadToken Issue(string fileName, int idColaborador, string email, string phone, DateTime utcNow)
+        => new(Guid.NewGuid(), fileName, idColaborador, email, phone, utcNow, null);
 
-    public static DownloadToken Rehydrate(Guid jti, int policyId, DateTime issuedAt, DateTime? consumedAt)
-        => new(jti, policyId, issuedAt, consumedAt);
+    public static DownloadToken Rehydrate(Guid jti, string fileName, int idColaborador, string email, string phone, DateTime issuedAt, DateTime? consumedAt)
+        => new(jti, fileName, idColaborador, email, phone, issuedAt, consumedAt);
 
     public bool IsConsumed => ConsumedAt.HasValue;
 

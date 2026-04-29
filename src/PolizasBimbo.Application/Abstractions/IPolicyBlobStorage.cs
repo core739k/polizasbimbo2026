@@ -1,0 +1,9 @@
+namespace PolizasBimbo.Application.Abstractions;
+
+public interface IPolicyBlobStorage
+{
+    Task<IReadOnlyList<string>> ListByCollaboratorAsync(int idColaborador, CancellationToken ct);
+    Task<BlobDownload?> OpenReadAsync(string fileName, CancellationToken ct);
+}
+
+public sealed record BlobDownload(Stream Content, string ContentType, long? Length);
