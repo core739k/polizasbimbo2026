@@ -12,6 +12,7 @@ appsettings.Production.json
 TestResults/
 coverage.*
 .idea/
+.claude/
 
 # Legado — archivos heredados del proyecto anterior que no deben viajar en Git
 src/PolizasBimbo.Web/wwwroot/resources/video_01.mp4
