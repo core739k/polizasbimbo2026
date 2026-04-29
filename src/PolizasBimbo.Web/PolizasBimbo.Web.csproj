@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
     <ProjectReference Include="..\PolizasBimbo.Application\PolizasBimbo.Application.csproj" />
@@ -9,6 +9,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>79bdfcea-3213-4fb4-9356-24a8226035f2</UserSecretsId>
   </PropertyGroup>
 
 </Project>
