@@ -26,16 +26,17 @@ public sealed class AzureBlobPolicyStorage : IPolicyBlobStorage
 
     public async Task<IReadOnlyList<string>> ListByCollaboratorAsync(int idColaborador, CancellationToken ct)
     {
-        var prefix = $"{_prefix}{idColaborador}_";
+        var marker = $"{idColaborador}_";
         _log.LogInformation(
-            "ListByCollaboratorAsync: Account={Account} Container={Container} Prefix='{Prefix}'",
-            _container.AccountName, _container.Name, prefix);
+            "ListByCollaboratorAsync: Account={Account} Container={Container} RootPrefix='{Prefix}' Marker='{Marker}'",
+            _container.AccountName, _container.Name, _prefix, marker);
 
         var names = new List<string>();
         try
         {
-            await foreach (var item in _container.GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix, ct))
+            await foreach (var item in _container.GetBlobsAsync(BlobTraits.None, BlobStates.None, _prefix, ct))
             {
+                if (!MatchesCollaborator(item.Name, marker)) continue;
                 _log.LogInformation("ListByCollaboratorAsync: hit Name='{Name}' Size={Size}", item.Name, item.Properties?.ContentLength);
                 names.Add(item.Name);
             }
@@ -43,13 +44,20 @@ public sealed class AzureBlobPolicyStorage : IPolicyBlobStorage
         catch (RequestFailedException ex)
         {
             _log.LogError(ex,
-                "ListByCollaboratorAsync FAILED. Status={Status} ErrorCode={ErrorCode} Prefix='{Prefix}'",
-                ex.Status, ex.ErrorCode, prefix);
+                "ListByCollaboratorAsync FAILED. Status={Status} ErrorCode={ErrorCode} RootPrefix='{Prefix}' Marker='{Marker}'",
+                ex.Status, ex.ErrorCode, _prefix, marker);
             throw;
         }
 
-        _log.LogInformation("ListByCollaboratorAsync: prefix='{Prefix}' matched {Count} blob(s)", prefix, names.Count);
+        _log.LogInformation("ListByCollaboratorAsync: marker='{Marker}' matched {Count} blob(s)", marker, names.Count);
         return names;
+    }
+
+    internal static bool MatchesCollaborator(string blobName, string marker)
+    {
+        var slash = blobName.LastIndexOf('/');
+        var leaf = slash >= 0 ? blobName[(slash + 1)..] : blobName;
+        return leaf.StartsWith(marker, StringComparison.Ordinal);
     }
 
     public async Task<BlobDownload?> OpenReadAsync(string fileName, CancellationToken ct)

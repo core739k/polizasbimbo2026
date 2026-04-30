@@ -8,6 +8,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/PolizasBimbo.Application.Tests/PolizasBimbo.Application.Tests.csproj" />
     <Project Path="tests/PolizasBimbo.Domain.Tests/PolizasBimbo.Domain.Tests.csproj" />
+    <Project Path="tests/PolizasBimbo.Infrastructure.Tests/PolizasBimbo.Infrastructure.Tests.csproj" />
     <Project Path="tests/PolizasBimbo.Integration.Tests/PolizasBimbo.Integration.Tests.csproj" />
   </Folder>
 </Solution>
