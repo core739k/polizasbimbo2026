@@ -116,3 +116,9 @@ Ver `/docs/adr/`:
 - ADR-001: Proxy de descarga con JWT opaco de un solo uso.
 - ADR-002: Full-Text Index sobre NombreCompleto. *(obsoleto — la búsqueda se hace por listado en Blob Storage; ya no se consulta `PolizasBimboTraspaso`.)*
 - ADR-003: Recarga del padrón con DELETE + INSERT transaccional. *(obsoleto — sin padrón SQL.)*
+
+---
+
+## Corrections Log
+
+- **[2026-04-30]** No crear rutinas, schedules, jobs ni tareas automáticas sin instrucción explícita del usuario — aunque parezca útil o se proponga en el plan. Solo ejecutar lo que fue aprobado explícitamente.
