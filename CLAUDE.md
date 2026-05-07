@@ -86,7 +86,22 @@ Las siguientes claves deben venir por User Secrets (Development), variables de e
 ## Recursos pendientes
 
 - **Fuente Gojal**: colocar `gojal.woff2` / `gojal.woff` / `gojal.ttf` en `src/PolizasBimbo.Web/wwwroot/fonts/gojal/`. El CSS ya hace referencia vía `@font-face`.
-- **App Service Azure**: `renovacionbimbo2026` en Linux + custom domain `renovacionbimbo.mcbrokers.com.mx`.
+
+---
+
+## Deploy a Azure
+
+- **App Service**: `programasegurovoluntario` (Windows), RG `Default-SQL-SouthCentralUS`, suscripción `a7ba4133-5d5d-475b-8c37-5efdd82471df`.
+- **Hostname**: `programasegurovoluntario.azurewebsites.net`.
+- **Comando** (zip deploy):
+  ```powershell
+  dotnet publish src/PolizasBimbo.Web/PolizasBimbo.Web.csproj -c Release -o publish
+  Compress-Archive -Path publish/* -DestinationPath polizasbimbo.zip -Force
+  az webapp deploy --subscription a7ba4133-5d5d-475b-8c37-5efdd82471df `
+    --resource-group Default-SQL-SouthCentralUS `
+    --name programasegurovoluntario `
+    --src-path polizasbimbo.zip --type zip --async false
+  ```
 
 ---
 
