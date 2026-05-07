@@ -323,3 +323,21 @@ input[type="color"] {
     display: block; /* Asegura que la imagen ocupe todo el ancho de su contenedor para el centrado */
     margin: 0 auto; /* Centra la imagen dentro de su divCell */
 }
+
+.grid{
+    display: grid;
+}
+
+.gap-20{
+    gap: 20px;
+}
+
+.grid-cols-3{
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media screen and (max-width: 600px ){
+    .grid-cols-3{
+        grid-template-columns: 1fr;
+    }
+}
